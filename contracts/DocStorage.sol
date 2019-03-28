@@ -1,16 +1,19 @@
 pragma solidity >=0.4.22 <0.6.0;
 
+/** @title Document Storage. */
 contract DocStorage {
   
+  /** @dev Audits the document uploaded.      */
+
   struct Documents {
-    address index;
-    uint status;
-    address[] upvote;
-    address[] downvote;
+    address index;  /** for keeping track of the index of the owner of document. */
+    uint status;    /** status of the document */
+    address[] upvote; /** keeps track of the number of upvotes for the document */ 
+    address[] downvote; /** keeps track of the number of downvotes for the document. */
   }
   
   // Document structs are mapped to hash values
-  mapping(string  => Documents) private docs;
+  mapping(string  => Documents) private docs; /** creates unique id for each document struct */
   string [] public docHashes;
 
   event AddNewDoc(string hash, address userAddress, uint status);
@@ -120,7 +123,7 @@ contract DocStorage {
   // Function to check if a document has been approved/disapproved
   function isAudited(string memory docHash) public view returns (bool)
   {
-    return ((docs[docHash].upvote.length + docs[docHash].downvote.length) >= 7);
+    return ((docs[docHash].upvote.length + docs[docHash].downvote.length) >= 9);
   }
   
   // Function to get number of upvotes

@@ -3,8 +3,8 @@ pragma solidity >=0.4.22 <0.6.0;
 contract User {
 
   struct UserPeer {
-  string category;
-    uint index;
+  string category; /** to qualify user as the owner or the validator */
+    uint index; /** to keep track othe index of the user */
   }
   
   // UserPeer structures are mapped to addresses
