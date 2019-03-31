@@ -2,12 +2,14 @@ pragma solidity >=0.4.22 <0.6.0;
 
 contract User {
 
+  //datastructure that stores user
+
   struct UserPeer {
   string category; /** to qualify user as the owner or the validator */
     uint index; /** to keep track othe index of the user */
   }
   
-  // UserPeer structures are mapped to addresses
+  // it maps the user address with the user ID
   mapping(address => UserPeer) private users;
   address[] private userIndex;
 
@@ -20,8 +22,15 @@ contract User {
     return (userIndex[users[userAddress].index] == userAddress);
   }
 
-  // Function to insert user
-  function insertUser(address userAddress, string memory category) public returns(uint index)
+  
+   /**
+     *Function to insert user.This function must be private because an user
+     * cannot insert another user on behalf of someone else.
+     *
+     * @param userAddress     The displaying address
+     * @param category        The category of the user
+     */
+  function insertUser(address userAddress, string memory category) private returns(uint index)
   {
     if(isUserPresent(userAddress)) revert(); 
     users[userAddress].category = category;

@@ -12,107 +12,127 @@ contract DocStorage {
     address[] downvote; /** keeps track of the number of downvotes for the document. */
   }
   
-  // Document structs are mapped to hash values
+  // Document structs are mapped to docID values
   mapping(string  => Documents) private docs; /** creates unique id for each document struct */
-  string [] public docHashes;
+  string [] public docIdStorage;
 
-  event AddNewDoc(string hash, address userAddress, uint status);
+  event docAdded(string docID, address userAddress, uint status);
  
-  // Function to insert a document in mapping
-  function insertDoc(address userAddress, string memory hash) public 
+   /**
+     *Function to insert document.This function must be private because an user
+     * cannot insert another document on behalf of someone else.
+     *
+     * @param userAddress     The displaying address
+     * @param docID          The ID of document
+     */
+  function insertDoc(address userAddress, string memory docID) private 
   {
-    require(!isDocPresent(hash));
-    emit AddNewDoc(hash, userAddress, 1);
-    docHashes.push(hash);
-    docs[hash].index = userAddress;
-    docs[hash].status = 1;
+    require(!isDocPresent(docID));
+    emit docAdded(docID, userAddress, 1);
+    docIdStorage.push(docID);
+    docs[docID].index = userAddress;
+    docs[docID].status = 1;
   }
 
   // Function to check if a document is already present
-  function isDocPresent(string memory hashval) public view returns(bool)
+  function isDocPresent(string memory _docID) public view returns(bool)
   {
-    return (docs[hashval].index != address(0));
+    return (docs[_docID].index != address(0));
   }
 
   // Function to check if given address is owner of document
-  function isOwner(address userAddress, string memory hash) public view returns(bool)
+  function isOwner(address userAddress, string memory docID) public view returns(bool)
   {
-    if (docs[hash].index == userAddress) 
+    if (docs[docID].index == userAddress) 
     {
       return true;
     }
     return false;
   }  
 
-  // Function to return hash value of document
-  function displayHash(uint num) public view returns(string memory)
+  // Function to return docID value of document
+  function displayDocID(uint num) public view returns(string memory)
   {
-    return docHashes[num];
+    return docIdStorage[num];
   }
 
   // Function to return status of document
-  function displayDocStatus(string memory hash) public view returns(uint)
+  function displayDocStatus(string memory docID) public view returns(uint)
   {
-    return docs[hash].status;
+    return docs[docID].status;
   }
 
   // Function to return count of uploaded documents
   function displayDocCount() public view returns(uint)
   {
-    return docHashes.length;
+    return docIdStorage.length;
   }
   
   // Function to upvote a document by reviewer
-  function upVote(string memory docHash, address Raddr)
-  public
+  /**
+     *This function must be private because a user
+     * cannot vote on behalf of someone else.
+     *
+     * @param Raddr     The reviewer's address
+     * @param _docId          The ID of document
+     */
+  function upVote(string memory _docId, address Raddr)
+  private
   {
-    require(!isAudited(docHash) && !isVoted(docHash, Raddr));
-    docs[docHash].upvote.push(Raddr);
+    require(!isAudited(_docId) && !isVoted(_docId, Raddr));
+    docs[_docId].upvote.push(Raddr);
     
-    if(isAudited(docHash))
+    if(isAudited(_docId))
       {
-        if(getUpvoteCount(docHash) > getDownvoteCount(docHash))
+        if(getUpvoteCount(_docId) > getDownvoteCount(_docId))
           {
-            docs[docHash].status = 0;
+            docs[_docId].status = 0;
           }
         else
           {
-            docs[docHash].status = 2;
+            docs[_docId].status = 2;
           }
       }
   }
   
   // Function to downvote a document by reviewer
-  function downVote(string memory docHash, address Raddr)  public
+   /**
+     *This function must be private because a user
+     * cannot vote on behalf of someone else.
+     *
+     * @param Raddr     The reviewer's address
+     * @param _docId          The ID of document
+     */
+  function downVote(string memory _docId, address Raddr)  private
   {
-    require(!isAudited(docHash) && !isVoted(docHash, Raddr));
-    docs[docHash].downvote.push(Raddr);
-    if(isAudited(docHash))
+    require(!isAudited(_docId) && !isVoted(_docId, Raddr));
+    docs[_docId].downvote.push(Raddr);
+    if(isAudited(_docId))
       {
-        if(getUpvoteCount(docHash) > getDownvoteCount(docHash))
+        if(getUpvoteCount(_docId) > getDownvoteCount(_docId))
           {
-            docs[docHash].status = 0;
+            docs[_docId].status = 0;
           }
         else
           {
-            docs[docHash].status = 2;
+            docs[_docId].status = 2;
           }
       }
   }
   
   // Function to check if a reviewer has already voted for a document
-  function isVoted(string memory docHash, address addr) public view returns(bool)
+  function isVoted(string memory _docId, address addr) public view returns(bool)
   {
-    for(uint i=0;i<docs[docHash].upvote.length;i++)
+    for(uint i=0;i<docs[_docId].upvote.length;i++)
       {
-        if(docs[docHash].upvote[i] == addr)
+        if(docs[_docId].upvote[i] == addr)
           {
             return true;
           }
       }
-    for(uint i=0;i<docs[docHash].downvote.length;i++)
+    for(uint i=0;i<docs[_docId].downvote.length;i++)
       {
-        if(docs[docHash].downvote[i] == addr)
+        if(docs[_docId].downvote[i] == addr)
           {
             return true;
           }
@@ -121,21 +141,21 @@ contract DocStorage {
   }
   
   // Function to check if a document has been approved/disapproved
-  function isAudited(string memory docHash) public view returns (bool)
+  function isAudited(string memory _docId) public view returns (bool)
   {
-    return ((docs[docHash].upvote.length + docs[docHash].downvote.length) >= 9);
+    return ((docs[_docId].upvote.length + docs[_docId].downvote.length) >= 9);
   }
   
   // Function to get number of upvotes
-  function getUpvoteCount(string memory docHash) public view returns(uint)
+  function getUpvoteCount(string memory _docId) public view returns(uint)
   {
-    return (docs[docHash].upvote.length);
+    return (docs[_docId].upvote.length);
   }
   
   // Function to get number of downvotes
-  function getDownvoteCount(string memory docHash) public view returns(uint)
+  function getDownvoteCount(string memory _docId) public view returns(uint)
   {
-    return (docs[docHash].downvote.length);
+    return (docs[_docId].downvote.length);
   }
   
   // Function to compare string memory values
