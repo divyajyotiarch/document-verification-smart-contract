@@ -1,4 +1,4 @@
-# FOSSEE19
+# Document Verification Smart Contract
 
 Verifying the validity of digital assets such as a birth certificate, a pdf document stating your will or a signed legal document specifying a business deal
 
